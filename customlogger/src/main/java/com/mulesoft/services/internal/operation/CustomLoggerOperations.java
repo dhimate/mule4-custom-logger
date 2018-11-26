@@ -24,7 +24,7 @@ import com.mulesoft.services.internal.metadata.LoggerUtils;
 public class CustomLoggerOperations {
 
 	protected transient Log logger;
-	
+
 	private static String HOSTNAME;
 
 	static {
@@ -57,23 +57,25 @@ public class CustomLoggerOperations {
   @MediaType(value = ANY, strict = false)
   public void logCustomException(@ParameterGroup(name="Settings") ExceptionSettings settings,
 		  @ParameterGroup(name="Exception Details") ExceptionDetails details) {
-	  
+
 	  initLogger(details.getLogCategory().category());
 	  String strExpressionResult = "";
-	  
+		String strExpResult = "";
+
 		try {
-			if (settings.getStrMessage() != null && settings.getStrMessage() != "") {
-				  strExpressionResult = "\nExpression: " + settings.getStrMessage();
+			strExpResult = settings.getStrMessage();
+			if (strExpResult != null && !(strExpResult.equals(""))) {
+				  strExpressionResult = "\nExpression: " + strExpResult;
 			  }
 		} catch (IOException e) {
 			strExpressionResult = "\nExpression: Error while evaluating expression!";
-		} 
-	  
+		}
+
 	  String strCorrelationId = "";
 	  if (settings.getCorrelationId() != null && settings.getCorrelationId() != "") {
 		  strCorrelationId = " CorrelationId: " + settings.getCorrelationId();
 	  }
-	  
+
 	  String strErrorMessage = "";
 	  if (details.getExceptionMsg() != null || details.getExceptionMsg() != "") {
 		  strErrorMessage = "\n Error message: " + details.getExceptionMsg();
@@ -83,19 +85,19 @@ public class CustomLoggerOperations {
 	  if (details.getExceptionDetailMsg() != null || details.getExceptionDetailMsg() != "") {
 		  strErrDetailMessage = "\nError detail message: " + details.getExceptionDetailMsg();
 	  }
-	  
+
 	String logMessage = "";
 	logMessage = String.format("Host: %s, ExceptionType: %s, Severity: %s, "
 			+ "%s \n Message: %s "
-			+ "%s %s", 
-			HOSTNAME, details.getExceptionType(), details.getExceptionSeverity(), 
-			strCorrelationId, settings.getLogMessage(), strExpressionResult, 
+			+ "%s %s %s",
+			HOSTNAME, details.getExceptionType(), details.getExceptionSeverity(),
+			strCorrelationId, settings.getLogMessage(), strExpressionResult,
 			strErrorMessage, strErrDetailMessage);
 
 	logWithLevel(logMessage, settings.getLogLevel().logLevel());
 	return;
   }
-  
+
 	/**
 	 * This method should be  used to log messages to the logger - preferably for the INFO and DEBUG ones
 	 * @param settings
@@ -109,40 +111,45 @@ public void logDefault(@ParameterGroup(name="Settings") DefaultLogSettings setti
 		  @ParameterGroup(name="Details") DefaultLogDetails details) {
 	  initLogger(details.getLogCategory().category());
 	  String strExpressionResult = "";
-	  
+		String exprResult = "";
+
 		try {
-			if (settings.getStrExpression() != null && settings.getStrExpression() != "") {
-				  strExpressionResult = "\nExpression: " + settings.getStrExpression();
-			  }
-		} catch (IOException e) {
-			strExpressionResult = "\nExpression: Error while evaluating expression!";
-		} 
-	  
+			exprResult = settings.getStrExpression();
+		}
+		catch (IOException e) {
+			exprResult = "\nExpression: Error while evaluating expression!";
+		}
+		if (exprResult != null && !exprResult.equals("")) {
+			  strExpressionResult = "\nExpression: " + exprResult;
+		  }
+
+
 	  String strCorrelationId = "";
-	  if (settings.getCorrelationId() != null && settings.getCorrelationId() != "") {
-		  strCorrelationId = " CorrelationId: " + settings.getCorrelationId();
+		String cIdResult = settings.getCorrelationId();
+	  if ( cIdResult != null && !cIdResult.equals("")) {
+		  strCorrelationId = " CorrelationId: " + cIdResult;
 	  }
-	  
-	  
+
+
 	String logMessage = "";
 	logMessage = String.format("Host: %s,"
-			+ "%s \n Message: %s ",
-			HOSTNAME,  
+			+ "%s \n Message: %s %s",
+			HOSTNAME,
 			strCorrelationId, settings.getLogMessage(), strExpressionResult);
-	
+
 
 	logWithLevel(logMessage, settings.getLogLevel().logLevel());
 	return;
 }
-  
-  
+
+
   protected void initLogger(String category) {
 		this.logger = LogFactory.getLog(category);
 	}
-  
-  
+
+
   protected void logWithLevel(String logMessage, String logLevel) {
-	  
+
 	  if (LoggerUtils.LogLevel.ERROR.logLevel().equals(logLevel)) {
 		  logger.error(logMessage);
 	  }
@@ -158,7 +165,7 @@ public void logDefault(@ParameterGroup(name="Settings") DefaultLogSettings setti
 	  else {
 		  logger.info(logMessage);
 	  }
-	  
+
   }
-  
+
 }
